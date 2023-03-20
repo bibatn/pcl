@@ -346,6 +346,37 @@ pcl::MovingLeastSquares<PointInT, PointOutT>::performProcessing (PointCloudOut &
           normals_->insert (normals_->end (), projected_points_normals.begin (), projected_points_normals.end ());
 #endif
       }
+      else
+      {
+#ifdef _OPENMP
+        const int tn = omp_get_thread_num ();
+        PointOutT aux;
+        aux.x = MAXFLOAT;
+        aux.y = MAXFLOAT;
+        aux.z = MAXFLOAT;
+
+        // Copy additional point information if available
+//        copyMissingFields ((*indices_)[cp], aux);
+
+        projected_points[tn].push_back (aux);
+        corresponding_input_indices[tn].indices.push_back ((*indices_)[cp]);
+
+        if (compute_normals_)
+        {
+          pcl::Normal aux_normal;
+          aux_normal.normal_x = static_cast<float> (MAXFLOAT);
+          aux_normal.normal_y = static_cast<float> (MAXFLOAT);
+          aux_normal.normal_z = static_cast<float> (MAXFLOAT);
+          aux_normal.curvature = MAXFLOAT;
+          projected_points_normals[tn].push_back(aux_normal);
+        }
+#endif
+//#else
+//        const Eigen::Vector3d point(MAXFLOAT, MAXFLOAT, MAXFLOAT);
+//        const Eigen::Vector3d normal(MAXFLOAT, MAXFLOAT, MAXFLOAT);
+//        double curvature = MAXFLOAT;
+//        addProjectedPointNormal ((*indices_)[cp], point, normal, curvature, output, *normals_, *corresponding_input_indices_);
+      }
     }
   }
 
